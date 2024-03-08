@@ -1,0 +1,13 @@
+name: 'Set up Dagger'
+description: 'Install Dagger CLI and start Dagger Engine'
+author: 'Camptocamp'
+
+inputs:
+  cloud-token:
+    description: 'Token for Dagger Engine to connect to Dagger Cloud'
+    required: false
+
+runs:
+  using: 'node20'
+  main: 'dist/main/index.js'
+  post: 'dist/post/index.js'
