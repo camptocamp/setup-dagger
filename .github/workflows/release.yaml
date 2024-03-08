@@ -1,0 +1,66 @@
+name: 'Release'
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: 'write'
+
+jobs:
+  action:
+    name: 'Release GitHub Action'
+    runs-on: 'ubuntu-22.04'
+
+    steps:
+      - name: 'Check out repository'
+        id: 'checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Configure Git'
+        id: 'config'
+        run: |
+          git config 'user.name' 'github-actions[bot]'
+          git config 'user.email' '41898282+github-actions[bot]@users.noreply.github.com'
+
+      - name: 'Batch changes'
+        id: 'batch'
+        uses: 'miniscruff/changie-action@v2'
+        with:
+          args: 'batch auto'
+
+      - name: 'Merge changes'
+        id: 'merge'
+        uses: 'miniscruff/changie-action@v2'
+        with:
+          args: 'merge'
+
+      - name: 'Get version'
+        id: 'version'
+        uses: 'miniscruff/changie-action@v2'
+        with:
+          args: 'latest --remove-prefix'
+
+      - name: 'Commit changes'
+        id: 'commit'
+        run: |
+          version='${{ steps.version.outputs.output }}'
+          changes="$(tail --lines +3 ".changes/v$version.md" | sed 's/^##//')"
+          echo -e "changes<<EOF\n$changes\nEOF" >> "$GITHUB_OUTPUT"
+          git add .
+          git commit --message "chore: release version $version"
+          git push
+          for tag in "v$version" "v$(echo "$version" | cut --delimiter '.' --field '1')" 'latest'
+          do
+            git tag --annotate --message "version $version" --message "$changes" --cleanup verbatim --force "$tag"
+          done
+          git push --tags --force
+
+      - name: 'Publish release'
+        id: 'publish'
+        run: |
+          version='${{ steps.version.outputs.output }}'
+          changes='${{ steps.commit.outputs.changes }}'
+          changes="$(echo "$changes" | sed 's/^#/##/')"
+          gh release create --title "Version $version" --notes "$changes" "v$version"
+        env:
+          GH_TOKEN: '${{ github.token }}'

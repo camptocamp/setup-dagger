@@ -1,0 +1,81 @@
+name: 'Checks'
+
+on:
+  push:
+    branches:
+      - 'main'
+
+  pull_request:
+    branches:
+      - 'main'
+
+permissions:
+  contents: 'read'
+
+jobs:
+  action:
+    name: 'Check GitHub Action'
+    runs-on: 'ubuntu-22.04'
+
+    steps:
+      - name: 'Check out repository'
+        id: 'checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Node.js'
+        id: 'setup-node'
+        uses: 'actions/setup-node@v4'
+        with:
+          node-version-file: '.node-version'
+          cache: 'npm'
+
+      - name: 'Install dependencies'
+        id: 'install'
+        run: 'npm clean-install'
+
+      - name: 'Lint code'
+        id: 'lint'
+        run: 'npm run lint'
+
+      - name: 'Check dependencies'
+        id: 'depcheck'
+        run: 'npm run depcheck'
+
+      - name: 'Package action'
+        id: 'package'
+        run: 'npm run package'
+
+      - name: 'Check differencies'
+        id: 'check-diff'
+        run: |
+          if ! git diff --quiet
+          then
+            git diff
+            exit 1
+          fi
+
+  dagger:
+    name: 'Check Dagger Module'
+    runs-on: 'ubuntu-22.04'
+
+    steps:
+      - name: 'Check out repository'
+        id: 'checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Dagger'
+        id: 'setup-dagger'
+        uses: 'camptocamp/setup-dagger@main'
+
+      - name: 'Generate code'
+        id: 'generate'
+        run: 'dagger develop'
+
+      - name: 'Check differencies'
+        id: 'check-diff'
+        run: |
+          if ! git diff --quiet
+          then
+            git diff
+            exit 1
+          fi

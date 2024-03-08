@@ -1,0 +1,32 @@
+name: 'Tests'
+
+on:
+  push:
+    branches:
+      - 'main'
+
+  pull_request:
+    branches:
+      - 'main'
+
+permissions:
+  contents: 'read'
+
+jobs:
+  action:
+    name: 'Test GitHub Action'
+    runs-on: 'ubuntu-22.04'
+
+    steps:
+      - name: 'Check out repository'
+        id: 'checkout'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Dagger'
+        id: 'setup-dagger'
+        uses: './'
+
+      - name: 'Run Dagger'
+        id: 'run-dagger'
+        run: |
+          dagger call test stdout
