@@ -1,0 +1,51 @@
+{
+  "type": "module",
+  "private": true,
+  "name": "setup-dagger",
+  "version": "0.0.0",
+  "description": "GitHub action to set up Dagger",
+  "author": "Camptocamp",
+  "license": "AGPL-3.0-only",
+  "homepage": "https://github.com/camptocamp/setup-dagger",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/camptocamp/setup-dagger.git"
+  },
+  "bugs": {
+    "url": "https://github.com/camptocamp/setup-dagger/issues"
+  },
+  "keywords": [
+    "GitHub",
+    "Actions",
+    "TypeScript",
+    "Dagger"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/http-client": "^2.2.1",
+    "@actions/io": "^1.1.3",
+    "@actions/tool-cache": "^2.0.1"
+  },
+  "devDependencies": {
+    "@tsconfig/strictest": "^2.0.3",
+    "@types/node": "^20.11.28",
+    "@vercel/ncc": "^0.38.1",
+    "depcheck": "^1.4.7",
+    "ts-standard": "^12.0.2"
+  },
+  "scripts": {
+    "format": "npx ts-standard --fix src",
+    "lint": "npx ts-standard src",
+    "depcheck": "npx depcheck",
+    "package:main": "npx ncc build --minify --source-map --out dist/main src/main.ts",
+    "package:main:watch": "npm run package:main -- --watch",
+    "package:post": "npx ncc build --minify --source-map --out dist/post src/post.ts",
+    "package:post:watch": "npm run package:post -- --watch",
+    "package": "npm run package:main && npm run package:post",
+    "all": "npm run lint && npm run depcheck && npm run package"
+  }
+}
