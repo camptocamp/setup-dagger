@@ -6,26 +6,21 @@ import * as core from '@actions/core'
 import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 import * as exec from '@actions/exec'
-
-import type { Octokit } from '@octokit/core'
-import type * as graphql from '@octokit/graphql-schema'
-import type { HttpClient } from '@actions/http-client'
+import { HttpClient } from '@actions/http-client'
 
 export default class Action {
 	public readonly version: string
 	public readonly platform: string
 	public readonly arch: string
 
-	private readonly octokit: Octokit
 	private readonly httpClient: HttpClient
 
-	constructor(version: string, platform: string, arch: string, octokit: Octokit, httpClient: HttpClient) {
+	constructor(version: string, platform: string, arch: string) {
 		this.version = version
 		this.platform = platform
 		this.arch = arch
 
-		this.octokit = octokit
-		this.httpClient = httpClient
+		this.httpClient = new HttpClient()
 	}
 
 	private archive(): string {
@@ -33,6 +28,17 @@ export default class Action {
 		let platform = this.platform
 		let arch = this.arch
 		let ext = 'tar.gz'
+
+		switch (platform) {
+			case 'linux' || 'darwin':
+				break
+			case 'win32':
+				platform = 'windows'
+				ext = 'zip'
+				break
+			default:
+				throw new Error('unsupported platform')
+		}
 
 		switch (arch) {
 			case 'x64':
@@ -42,61 +48,17 @@ export default class Action {
 				break
 			case 'arm':
 				arch = 'armv7'
+				if (platform === 'darwin') throw new Error('unsupported platform and architecture combination')
 				break
 			default:
 				throw new Error('unsupported architecture')
 		}
 
-		switch (platform) {
-			case 'linux':
-				break
-			case 'darwin':
-				if (arch = 'armv7') throw new Error('unsupported platform and architecture combination')
-				break
-			case 'win32':
-				platform = 'windows'
-				ext = 'zip'
-			default:
-				throw new Error('unsupported platform')
-		}
-
 		return `dagger_${version}_${platform}_${arch}.${ext}`
 	}
 
-	private async url(asset: string): Promise<string> {
-		const result = await this.octokit.graphql<{ repository: graphql.Repository }>(
-			`query ($owner: String!, $repo: String!, $release: String!, $asset: String!) {
-				repository(owner: $owner, name: $repo) {
-					release(tagName: $release) {
-						releaseAssets(name: $asset, first: 1){
-							nodes{
-								downloadUrl
-							}
-						}
-					}
-				}
-			}`,
-			{
-				owner: 'dagger',
-				repo: 'dagger',
-				release: this.version,
-				asset: asset
-			}
-		)
-
-		const release = result.repository.release
-
-		if (release === undefined || release === null) {
-			throw new Error('release not found')
-		}
-
-		const assets = release.releaseAssets.nodes
-
-		if (assets === undefined || assets === null || assets.length === 0) {
-			throw new Error('asset not found')
-		}
-
-		return assets[0]?.downloadUrl
+	private url(asset: string): string {
+		return `https://github.com/dagger/dagger/releases/download/${this.version}/${asset}`
 	}
 
 	public async installCli(): Promise<void> {
@@ -105,22 +67,20 @@ export default class Action {
 		if (cachedPath === '') {
 			const archive = this.archive()
 
-			let downloadPath: string
-
-			try {
-				const url = await this.url(archive)
-
-				downloadPath = await tc.downloadTool(url)
-			} catch (error: any) {
+			const downloadPath = await tc.downloadTool(this.url(archive)).catch((error) => {
 				throw new Error('failed to download archive: ' + error.message)
-			}
+			})
 
 			try {
-				const url = await this.url('checksums.txt')
+				const httpResponse = await this.httpClient.get(this.url('checksums.txt')).catch((error) => {
+					throw new Error('failed to download checksums: ' + error.message)
+				})
 
-				const response = await this.httpClient.get(url)
+				const httpResponseBody = await httpResponse.readBody().catch((error) => {
+					throw new Error('failed to read checksums: ' + error.message)
+				})
 
-				const checksum = (await response.readBody()).split('\n').find((checksum: string): boolean => {
+				const checksum = httpResponseBody.split('\n').find((checksum: string): boolean => {
 					return checksum.includes(archive)
 				})
 

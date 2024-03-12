@@ -28484,7 +28484,10 @@ var io = __nccwpck_require__(7436);
 var tool_cache = __nccwpck_require__(7784);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
+// EXTERNAL MODULE: ./node_modules/@actions/http-client/lib/index.js
+var lib = __nccwpck_require__(6255);
 ;// CONCATENATED MODULE: ./src/action.ts
+
 
 
 
@@ -28497,20 +28500,28 @@ class Action {
     version;
     platform;
     arch;
-    octokit;
     httpClient;
-    constructor(version, platform, arch, octokit, httpClient) {
+    constructor(version, platform, arch) {
         this.version = version;
         this.platform = platform;
         this.arch = arch;
-        this.octokit = octokit;
-        this.httpClient = httpClient;
+        this.httpClient = new lib.HttpClient();
     }
     archive() {
         let version = this.version;
         let platform = this.platform;
         let arch = this.arch;
         let ext = 'tar.gz';
+        switch (platform) {
+            case 'linux' || 0:
+                break;
+            case 'win32':
+                platform = 'windows';
+                ext = 'zip';
+                break;
+            default:
+                throw new Error('unsupported platform');
+        }
         switch (arch) {
             case 'x64':
                 arch = 'amd64';
@@ -28519,68 +28530,32 @@ class Action {
                 break;
             case 'arm':
                 arch = 'armv7';
+                if (platform === 'darwin')
+                    throw new Error('unsupported platform and architecture combination');
                 break;
             default:
                 throw new Error('unsupported architecture');
         }
-        switch (platform) {
-            case 'linux':
-                break;
-            case 'darwin':
-                if (arch = 'armv7')
-                    throw new Error('unsupported platform and architecture combination');
-                break;
-            case 'win32':
-                platform = 'windows';
-                ext = 'zip';
-            default:
-                throw new Error('unsupported platform');
-        }
         return `dagger_${version}_${platform}_${arch}.${ext}`;
     }
-    async url(asset) {
-        const result = await this.octokit.graphql(`query ($owner: String!, $repo: String!, $release: String!, $asset: String!) {
-				repository(owner: $owner, name: $repo) {
-					release(tagName: $release) {
-						releaseAssets(name: $asset, first: 1){
-							nodes{
-								downloadUrl
-							}
-						}
-					}
-				}
-			}`, {
-            owner: 'dagger',
-            repo: 'dagger',
-            release: this.version,
-            asset: asset
-        });
-        const release = result.repository.release;
-        if (release === undefined || release === null) {
-            throw new Error('release not found');
-        }
-        const assets = release.releaseAssets.nodes;
-        if (assets === undefined || assets === null || assets.length === 0) {
-            throw new Error('asset not found');
-        }
-        return assets[0]?.downloadUrl;
+    url(asset) {
+        return `https://github.com/dagger/dagger/releases/download/${this.version}/${asset}`;
     }
     async installCli() {
         let cachedPath = tool_cache.find('dagger', this.version);
         if (cachedPath === '') {
             const archive = this.archive();
-            let downloadPath;
-            try {
-                const url = await this.url(archive);
-                downloadPath = await tool_cache.downloadTool(url);
-            }
-            catch (error) {
+            const downloadPath = await tool_cache.downloadTool(this.url(archive)).catch((error) => {
                 throw new Error('failed to download archive: ' + error.message);
-            }
+            });
             try {
-                const url = await this.url('checksums.txt');
-                const response = await this.httpClient.get(url);
-                const checksum = (await response.readBody()).split('\n').find((checksum) => {
+                const httpResponse = await this.httpClient.get(this.url('checksums.txt')).catch((error) => {
+                    throw new Error('failed to download checksums: ' + error.message);
+                });
+                const httpResponseBody = await httpResponse.readBody().catch((error) => {
+                    throw new Error('failed to read checksums: ' + error.message);
+                });
+                const checksum = httpResponseBody.split('\n').find((checksum) => {
                     return checksum.includes(archive);
                 });
                 if (checksum === undefined) {
