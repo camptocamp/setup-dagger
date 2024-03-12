@@ -1,5 +1,6 @@
 {
-  "name": "javascript-action",
+  "name": "setup-dagger",
+  "type": "module",
   "description": "GitHub Actions JavaScript Template",
   "version": "0.0.0",
   "author": "",
@@ -30,7 +31,7 @@
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
     "lint": "npx eslint . -c ./.github/linters/.eslintrc.yml",
-    "package": "npx ncc build src/index.js -o dist --source-map --license licenses.txt",
+    "package": "npx ncc build src/main.ts -o dist/main --source-map --license licenses.txt && npx ncc build src/post.ts -o dist/post --source-map --license licenses.txt",
     "package:watch": "npm run package -- --watch",
     "test": "npx jest",
     "all": "npm run format:write && npm run lint && npm run test && npm run coverage && npm run package"
@@ -64,7 +65,12 @@
     ]
   },
   "dependencies": {
-    "@actions/core": "^1.10.1"
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "@actions/tool-cache": "^2.0.1",
+    "@octokit/graphql-schema": "^15.2.0",
+    "@tsconfig/node20": "^20.1.2",
+    "@tsconfig/strictest": "^2.0.3"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",
