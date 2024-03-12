@@ -1,21 +1,15 @@
 import * as process from 'process'
 import * as fs from 'fs/promises'
 import * as core from '@actions/core'
-import * as github from '@actions/github'
-import * as http from '@actions/http-client'
+import { Octokit } from '@octokit/core'
+import { HttpClient } from '@actions/http-client'
 
 import Action from './action'
 
 await async function (): Promise<void> {
   try {
-    const githubToken = process.env['GITHUB_TOKEN']
-
-    if (githubToken === undefined) {
-      throw new Error('failed to get GITHUB_TOKEN environment variable')
-    }
-
-    const octokit = github.getOctokit(githubToken)
-    const httpClient = new http.HttpClient
+    const octokit = new Octokit()
+    const httpClient = new HttpClient()
 
     const module = JSON.parse((await fs.readFile('dagger.json').catch((error) => {
       throw new Error('failed to read dagger.json file: ' + error.message)

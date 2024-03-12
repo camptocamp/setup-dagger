@@ -7,19 +7,19 @@ import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 import * as exec from '@actions/exec'
 
-import type * as octokit from '@octokit/core'
+import type { Octokit } from '@octokit/core'
 import type * as graphql from '@octokit/graphql-schema'
-import type * as http from '@actions/http-client'
+import type { HttpClient } from '@actions/http-client'
 
 export default class Action {
 	public readonly version: string
 	public readonly platform: string
 	public readonly arch: string
 
-	private readonly octokit: octokit.Octokit
-	private readonly httpClient: http.HttpClient
+	private readonly octokit: Octokit
+	private readonly httpClient: HttpClient
 
-	constructor(version: string, platform: string, arch: string, octokit: octokit.Octokit, httpClient: http.HttpClient) {
+	constructor(version: string, platform: string, arch: string, octokit: Octokit, httpClient: HttpClient) {
 		this.version = version
 		this.platform = platform
 		this.arch = arch
