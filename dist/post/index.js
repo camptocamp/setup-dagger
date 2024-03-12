@@ -28527,7 +28527,7 @@ class Action {
             case 'linux':
                 break;
             case 'darwin':
-                if ((arch = 'armv7'))
+                if (arch = 'armv7')
                     throw new Error('unsupported platform and architecture combination');
                 break;
             case 'win32':
@@ -28580,9 +28580,7 @@ class Action {
             try {
                 const url = await this.url('checksums.txt');
                 const response = await this.httpClient.get(url);
-                const checksum = (await response.readBody())
-                    .split('\n')
-                    .find((checksum) => {
+                const checksum = (await response.readBody()).split('\n').find((checksum) => {
                     return checksum.includes(archive);
                 });
                 if (checksum === undefined) {
@@ -28609,14 +28607,13 @@ class Action {
             catch (error) {
                 throw new Error('failed to extract archive: ' + error.message);
             }
-            cachedPath = await tool_cache.cacheFile(external_path_.join(extractPath, 'dagger'), 'dagger', 'dagger', this.version)
-                .catch(error => {
+            cachedPath = await tool_cache.cacheFile(external_path_.join(extractPath, 'dagger'), 'dagger', 'dagger', this.version).catch((error) => {
                 throw new Error('failed to cache binary: ' + error.message);
             });
-            await io.rmRF(downloadPath).catch(error => {
+            await io.rmRF(downloadPath).catch((error) => {
                 throw new Error('failed to remove downloaded archive: ' + error.message);
             });
-            await io.rmRF(extractPath).catch(error => {
+            await io.rmRF(extractPath).catch((error) => {
                 throw new Error('failed to remove extracted archive: ' + error.message);
             });
         }
@@ -28629,7 +28626,9 @@ class Action {
             '--volume dagger-engine:/var/lib/dagger ' +
             '--stop-signal SIGTERM ' +
             '--detach';
-        const args = [`registry.dagger.io/engine:${this.version}`];
+        const args = [
+            `registry.dagger.io/engine:${this.version}`,
+        ];
         await exec.exec(command, args);
         core.exportVariable('EXPERIMENTAL_DAGGER_RUNNER_HOST', 'docker-container://dagger-engine');
     }
@@ -28654,16 +28653,16 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _action__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(7801);
 
 
-await (async function () {
+await async function () {
     try {
-        await _action__WEBPACK_IMPORTED_MODULE_1__/* ["default"].stopEngine */ .Z.stopEngine().catch(error => {
+        await _action__WEBPACK_IMPORTED_MODULE_1__/* ["default"].stopEngine */ .Z.stopEngine().catch((error) => {
             throw new Error('failed to stop engine: ' + error.message);
         });
     }
     catch (error) {
         _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
     }
-})();
+}();
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);

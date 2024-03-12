@@ -17,7 +17,7 @@ await async function (): Promise<void> {
 
     const action = new Action(module.engineVersion, process.platform, process.arch, octokit, httpClient)
 
-    await Promise.allSettled([
+    await Promise.all([
       action.installCli().catch((error) => {
         throw new Error('failed to install CLI: ' + error.message)
       }),

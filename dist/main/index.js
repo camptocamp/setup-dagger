@@ -29966,7 +29966,7 @@ class Action {
             case 'linux':
                 break;
             case 'darwin':
-                if ((arch = 'armv7'))
+                if (arch = 'armv7')
                     throw new Error('unsupported platform and architecture combination');
                 break;
             case 'win32':
@@ -30019,9 +30019,7 @@ class Action {
             try {
                 const url = await this.url('checksums.txt');
                 const response = await this.httpClient.get(url);
-                const checksum = (await response.readBody())
-                    .split('\n')
-                    .find((checksum) => {
+                const checksum = (await response.readBody()).split('\n').find((checksum) => {
                     return checksum.includes(archive);
                 });
                 if (checksum === undefined) {
@@ -30048,14 +30046,13 @@ class Action {
             catch (error) {
                 throw new Error('failed to extract archive: ' + error.message);
             }
-            cachedPath = await tool_cache.cacheFile(external_path_.join(extractPath, 'dagger'), 'dagger', 'dagger', this.version)
-                .catch(error => {
+            cachedPath = await tool_cache.cacheFile(external_path_.join(extractPath, 'dagger'), 'dagger', 'dagger', this.version).catch((error) => {
                 throw new Error('failed to cache binary: ' + error.message);
             });
-            await io.rmRF(downloadPath).catch(error => {
+            await io.rmRF(downloadPath).catch((error) => {
                 throw new Error('failed to remove downloaded archive: ' + error.message);
             });
-            await io.rmRF(extractPath).catch(error => {
+            await io.rmRF(extractPath).catch((error) => {
                 throw new Error('failed to remove extracted archive: ' + error.message);
             });
         }
@@ -30068,7 +30065,9 @@ class Action {
             '--volume dagger-engine:/var/lib/dagger ' +
             '--stop-signal SIGTERM ' +
             '--detach';
-        const args = [`registry.dagger.io/engine:${this.version}`];
+        const args = [
+            `registry.dagger.io/engine:${this.version}`,
+        ];
         await exec.exec(command, args);
         core.exportVariable('EXPERIMENTAL_DAGGER_RUNNER_HOST', 'docker-container://dagger-engine');
     }
@@ -30105,21 +30104,21 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 
 
 
-await (async function () {
+await async function () {
     try {
         const octokit = new _octokit_core__WEBPACK_IMPORTED_MODULE_5__.Octokit();
         const httpClient = new _actions_http_client__WEBPACK_IMPORTED_MODULE_3__.HttpClient();
-        const module = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_1__.readFile('dagger.json').catch(error => {
+        const module = JSON.parse((await fs_promises__WEBPACK_IMPORTED_MODULE_1__.readFile('dagger.json').catch((error) => {
             throw new Error('failed to read dagger.json file: ' + error.message);
         })).toString());
         const action = new _action__WEBPACK_IMPORTED_MODULE_4__/* ["default"] */ .Z(module.engineVersion, process__WEBPACK_IMPORTED_MODULE_0__.platform, process__WEBPACK_IMPORTED_MODULE_0__.arch, octokit, httpClient);
-        await Promise.allSettled([
-            action.installCli().catch(error => {
+        await Promise.all([
+            action.installCli().catch((error) => {
                 throw new Error('failed to install CLI: ' + error.message);
             }),
-            action.startEngine().catch(error => {
+            action.startEngine().catch((error) => {
                 throw new Error('failed to start engine: ' + error.message);
-            })
+            }),
         ]);
         const cloudToken = _actions_core__WEBPACK_IMPORTED_MODULE_2__.getInput('cloud-token');
         if (cloudToken !== '') {
@@ -30129,7 +30128,7 @@ await (async function () {
     catch (error) {
         _actions_core__WEBPACK_IMPORTED_MODULE_2__.setFailed(error.message);
     }
-})();
+}();
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
