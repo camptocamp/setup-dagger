@@ -4,15 +4,9 @@ author: "Your name or organization here"
 
 # Define your inputs here.
 inputs:
-  milliseconds:
+  cloud-token:
     description: "Your input description here"
-    required: true
-    default: "1000"
-
-# Define your outputs here.
-outputs:
-  time:
-    description: "Your output description here"
+    required: false
 
 runs:
   using: node20
