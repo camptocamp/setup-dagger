@@ -28508,19 +28508,19 @@ class Action {
         this.httpClient = new lib.HttpClient();
     }
     archive() {
-        let version = this.version;
         let platform = this.platform;
         let arch = this.arch;
         let ext = 'tar.gz';
         switch (platform) {
-            case 'linux' || 0:
+            case 'linux':
+            case 'darwin':
                 break;
             case 'win32':
                 platform = 'windows';
                 ext = 'zip';
                 break;
             default:
-                throw new Error('unsupported platform');
+                throw new Error('Unsupported platform');
         }
         switch (arch) {
             case 'x64':
@@ -28531,12 +28531,12 @@ class Action {
             case 'arm':
                 arch = 'armv7';
                 if (platform === 'darwin')
-                    throw new Error('unsupported platform and architecture combination');
+                    throw new Error('Unsupported platform and architecture combination');
                 break;
             default:
-                throw new Error('unsupported architecture');
+                throw new Error('Unsupported architecture');
         }
-        return `dagger_${version}_${platform}_${arch}.${ext}`;
+        return `dagger_${this.version}_${platform}_${arch}.${ext}`;
     }
     url(asset) {
         return `https://github.com/dagger/dagger/releases/download/${this.version}/${asset}`;
@@ -28546,29 +28546,29 @@ class Action {
         if (cachedPath === '') {
             const archive = this.archive();
             const downloadPath = await tool_cache.downloadTool(this.url(archive)).catch((error) => {
-                throw new Error('failed to download archive: ' + error.message);
+                throw new Error('Failed to download archive', { cause: error });
             });
             try {
                 const httpResponse = await this.httpClient.get(this.url('checksums.txt')).catch((error) => {
-                    throw new Error('failed to download checksums: ' + error.message);
+                    throw new Error('Failed to download checksums', { cause: error });
                 });
                 const httpResponseBody = await httpResponse.readBody().catch((error) => {
-                    throw new Error('failed to read checksums: ' + error.message);
+                    throw new Error('Failed to read checksums', { cause: error });
                 });
                 const checksum = httpResponseBody.split('\n').find((checksum) => {
                     return checksum.includes(archive);
                 });
                 if (checksum === undefined) {
-                    throw new Error('checksum not found');
+                    throw new Error('Checksum not found');
                 }
                 const hash = external_crypto_.createHash('sha256');
                 await promises_namespaceObject.pipeline(external_fs_.createReadStream(downloadPath), hash);
                 if (!checksum.startsWith(hash.digest('hex'))) {
-                    throw new Error('checksum mismatch');
+                    throw new Error('Checksum mismatch');
                 }
             }
             catch (error) {
-                throw new Error('failed to verify archive checksum: ' + error.message);
+                throw new Error('Failed to verify archive checksum', { cause: error });
             }
             let extractPath;
             try {
@@ -28580,16 +28580,16 @@ class Action {
                 }
             }
             catch (error) {
-                throw new Error('failed to extract archive: ' + error.message);
+                throw new Error('Failed to extract archive', { cause: error });
             }
             cachedPath = await tool_cache.cacheFile(external_path_.join(extractPath, 'dagger'), 'dagger', 'dagger', this.version).catch((error) => {
-                throw new Error('failed to cache binary: ' + error.message);
+                throw new Error('Failed to cache binary', { cause: error });
             });
             await io.rmRF(downloadPath).catch((error) => {
-                throw new Error('failed to remove downloaded archive: ' + error.message);
+                throw new Error('Failed to remove downloaded archive', { cause: error });
             });
             await io.rmRF(extractPath).catch((error) => {
-                throw new Error('failed to remove extracted archive: ' + error.message);
+                throw new Error('Failed to remove extracted archive', { cause: error });
             });
         }
         core.addPath(cachedPath);
@@ -28602,7 +28602,7 @@ class Action {
             '--stop-signal SIGTERM ' +
             '--detach';
         const args = [
-            `registry.dagger.io/engine:${this.version}`,
+            `registry.dagger.io/engine:${this.version}`
         ];
         await exec.exec(command, args);
         core.exportVariable('EXPERIMENTAL_DAGGER_RUNNER_HOST', 'docker-container://dagger-engine');
@@ -28626,21 +28626,40 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(2186);
 /* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _action__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(7801);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(1314);
 
 
-await async function () {
-    try {
-        await _action__WEBPACK_IMPORTED_MODULE_1__/* ["default"].stopEngine */ .Z.stopEngine().catch((error) => {
-            throw new Error('failed to stop engine: ' + error.message);
-        });
-    }
-    catch (error) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
-    }
-}();
+
+await (async function () {
+    await _action__WEBPACK_IMPORTED_MODULE_1__/* ["default"].stopEngine */ .Z.stopEngine().catch((error) => {
+        throw new Error('Failed to stop engine', { cause: error });
+    });
+}()).catch((error) => {
+    (0,_utils__WEBPACK_IMPORTED_MODULE_2__/* ["default"] */ .Z)(error);
+    _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error);
+});
 
 __webpack_async_result__();
 } catch(e) { __webpack_async_result__(e); } }, 1);
+
+/***/ }),
+
+/***/ 1314:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "Z": () => (/* binding */ logError)
+/* harmony export */ });
+function logError(error) {
+    const print = (error, prefix) => {
+        console.log(prefix + error.toString());
+        if (error.cause !== undefined) {
+            print(error.cause, prefix === '' ? '└─' : '  ' + prefix);
+        }
+    };
+    print(error, '');
+}
+
 
 /***/ }),
 
