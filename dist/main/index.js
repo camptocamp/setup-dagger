@@ -28539,7 +28539,7 @@ class Action {
         return `dagger_${this.version}_${platform}_${arch}.${ext}`;
     }
     url(asset) {
-        return `https://github.com/dagger/dagger/releases/download/${this.version}/${asset}`;
+        return `https://github.com/dagger/dagger/release/download/${this.version}/${asset}`;
     }
     async installCli() {
         let cachedPath = tool_cache.find('dagger', this.version);
