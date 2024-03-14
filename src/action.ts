@@ -58,7 +58,7 @@ export default class Action {
   }
 
   private url (asset: string): string {
-    return `https://github.com/dagger/dagger/release/download/${this.version}/${asset}`
+    return `https://github.com/dagger/dagger/releases/download/${this.version}/${asset}`
   }
 
   public async installCli (): Promise<void> {
