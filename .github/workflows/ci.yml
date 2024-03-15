@@ -55,7 +55,7 @@ jobs:
 
       - name: "Set up Dagger"
         id: "dagger-setup"
-        uses: "camptocamp/setup-dagger"
+        uses: "camptocamp/setup-dagger@main"
         with:
           cloud-token: "{{ $secrets.DAGGER_CLOUD_TOKEN }}"
 
