@@ -22,5 +22,5 @@ steps:
   - name: 'Run Dagger'
     id: 'dagger'
     run: |
-      dagger call --mod 'github.com/camptocamp/setup-dagger' test
+      dagger call --mod 'github.com/camptocamp/setup-dagger@main' test stdout
 ```
