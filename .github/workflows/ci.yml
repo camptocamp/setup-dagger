@@ -49,16 +49,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        id: checkout
-        uses: actions/checkout@v4
+      - name: "Checkout repository"
+        id: "checkout"
+        uses: "actions/checkout@v4"
 
-      - name: Test Local Action
-        id: test-action
-        uses: ./
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Set up Dagger"
+        id: "dagger-setup"
+        uses: "camptocamp/setup-dagger"
+        with:
+          cloud-token: "{{ $secrets.DAGGER_CLOUD_TOKEN }}"
 
-      - name: Print Output
-        id: output
-        run: dagger call test stdout
+      - name: "Run Dagger"
+        id: "dagger"
+        run: |
+          dagger call --mod 'github.com/camptocamp/setup-dagger' test
