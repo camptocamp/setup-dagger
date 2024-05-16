@@ -14,7 +14,7 @@ steps:
 
   - name: "Set up Dagger"
     id: "setup-dagger"
-    uses: "camptocamp/setup-dagger@main"
+    uses: "camptocamp/setup-dagger@v1"
     with:
       cloud-token: "{{ $secrets.DAGGER_CLOUD_TOKEN }}"
 
