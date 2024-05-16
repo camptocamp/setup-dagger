@@ -65,7 +65,7 @@ jobs:
 
       - name: 'Set up Dagger'
         id: 'setup-dagger'
-        uses: 'camptocamp/setup-dagger@main'
+        uses: 'camptocamp/setup-dagger@latest'
 
       - name: 'Generate code'
         id: 'generate'
