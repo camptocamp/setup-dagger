@@ -3,6 +3,9 @@ description: "Install Dagger CLI and start Dagger Engine"
 author: "Camptocamp"
 
 inputs:
+  module-path:
+    description: 'Path to the Dagger module (where the `dagger.json` file is located)'
+    required: false
   cloud-token:
     description: "Token for Dagger Engine to connect to Dagger Cloud"
     required: false

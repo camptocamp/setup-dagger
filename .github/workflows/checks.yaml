@@ -68,11 +68,14 @@ jobs:
 
       - name: "Set up Dagger"
         id: "setup-dagger"
-        uses: "camptocamp/setup-dagger@latest"
+        uses: "camptocamp/setup-dagger@feat/add-module-path-input"
+        with:
+          module-path: "tests/data/"
 
       - name: "Generate code"
         id: "generate"
         run: "dagger develop"
+        working-directory: "${{ steps.setup-dagger.outputs.module-path }}"
 
       - name: "Check differencies"
         id: "check-diff"

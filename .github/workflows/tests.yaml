@@ -17,6 +17,15 @@ jobs:
     permissions:
       contents: "read"
 
+    strategy:
+      matrix:
+        modules:
+          - path: "tests/data"
+          - path: "tests/data/"
+          - path: "./tests/data/"
+
+      fail-fast: false
+
     steps:
       - name: "Check out repository"
         id: "checkout"
@@ -25,8 +34,11 @@ jobs:
       - name: "Set up Dagger"
         id: "setup-dagger"
         uses: "./"
+        with:
+          module-path: "${{ matrix.modules.path }}"
 
       - name: "Run Dagger"
         id: "run-dagger"
         run: |
           dagger call test stdout
+        working-directory: "${{ steps.setup-dagger.outputs.module-path }}"

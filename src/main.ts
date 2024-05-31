@@ -9,7 +9,17 @@ import Action from './action'
 import printError from './utils'
 
 await (async function (): Promise<void> {
-  const module = JSON.parse((await fs.readFile('dagger.json').catch((error) => {
+  let modulePath = core.getInput('module-path')
+
+  if (modulePath === '') {
+    modulePath = './'
+  } else if (!modulePath.endsWith('/')) {
+    modulePath += '/'
+  }
+
+  core.setOutput('module-path', modulePath)
+
+  const module = JSON.parse((await fs.readFile(modulePath + 'dagger.json').catch((error) => {
     throw new Error('Failed to parse dagger.json file', { cause: error })
   })).toString())
 
