@@ -16,10 +16,12 @@ steps:
     id: "setup-dagger"
     uses: "camptocamp/setup-dagger@v1"
     with:
+      module-path: "path/to/folder/containing/dagger.json"
       cloud-token: "{{ $secrets.DAGGER_CLOUD_TOKEN }}"
 
   - name: "Run Dagger"
     id: "run-dagger"
     run: |
       dagger version
+    working-directory: "${{ steps.setup-dagger.outputs.module-path }}"
 ```
