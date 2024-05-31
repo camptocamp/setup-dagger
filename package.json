@@ -2,7 +2,7 @@
   "type": "module",
   "private": true,
   "name": "setup-dagger",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GitHub action to set up Dagger",
   "author": "Camptocamp",
   "license": "AGPL-3.0-only",

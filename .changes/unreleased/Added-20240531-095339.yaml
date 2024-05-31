@@ -1,3 +1,0 @@
-kind: Added
-body: New `module-path` input to support Dagger modules located elsewhere than in the current working directory
-time: 2024-05-31T09:53:39.566212482+02:00

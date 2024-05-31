@@ -68,7 +68,7 @@ jobs:
 
       - name: "Set up Dagger"
         id: "setup-dagger"
-        uses: "camptocamp/setup-dagger@feat/add-module-path-input"
+        uses: "camptocamp/setup-dagger@latest"
         with:
           module-path: "tests/data/"
 
