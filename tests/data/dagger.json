@@ -1,8 +1,9 @@
 {
   "name": "setup-dagger",
-  "sdk": "go",
-  "source": ".",
-  "engineVersion": "v0.11.6",
+  "engineVersion": "v0.18.19",
+  "sdk": {
+    "source": "go"
+  },
   "codegen": {
     "automaticGitignore": false
   }

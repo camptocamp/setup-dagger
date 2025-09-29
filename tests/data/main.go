@@ -3,8 +3,12 @@
 
 package main
 
+import (
+	"dagger/setup-dagger/internal/dagger"
+)
+
 type SetupDagger struct{}
 
-func (m *SetupDagger) Test() *Container {
+func (m *SetupDagger) Test() *dagger.Container {
 	return dag.Container().From("alpine:latest").WithExec([]string{"echo", "It works!"})
 }
