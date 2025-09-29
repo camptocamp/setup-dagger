@@ -1,22 +1,16 @@
-name: "Release"
+name: "Prepare release"
 
 on:
-  pull_request:
-    branches:
-      - "main"
-    paths:
-      - "CHANGELOG.md"
-    types:
-      - "closed"
+  workflow_dispatch:
 
 jobs:
   action:
-    name: "Release GitHub Action"
+    name: "Prepare GitHub Action release"
     runs-on: "ubuntu-22.04"
-    if: "github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'releases/')"
 
     permissions:
       contents: "write"
+      pull-requests: "write"
 
     steps:
       - name: "Check out repository"
@@ -29,30 +23,41 @@ jobs:
           git config 'user.name' 'github-actions[bot]'
           git config 'user.email' '41898282+github-actions[bot]@users.noreply.github.com'
 
+      - name: "Batch changes"
+        id: "batch"
+        uses: "miniscruff/changie-action@v2"
+        with:
+          args: "batch auto"
+
+      - name: "Merge changes"
+        id: "merge"
+        uses: "miniscruff/changie-action@v2"
+        with:
+          args: "merge"
+
       - name: "Get version"
         id: "version"
         uses: "miniscruff/changie-action@v2"
         with:
           args: "latest --remove-prefix"
 
-      - name: "Create tags"
+      - name: "Commit changes"
         id: "commit"
         run: |
           version='${{ steps.version.outputs.output }}'
           changes="$(tail --lines +3 ".changes/v$version.md" | sed 's/^##//')"
           echo -e "changes<<EOF\n$changes\nEOF" >> "$GITHUB_OUTPUT"
-          for tag in "v$version" "v$(echo "$version" | cut --delimiter '.' --field '1')" 'latest'
-          do
-            git tag --annotate --message "version $version" --message "$changes" --cleanup verbatim --force "$tag"
-          done
-          git push --tags --force
+          git checkout -b "release"
+          git add .
+          git commit --message "chore: release version $version"
+          git push origin --set-upstream --force 'HEAD'
 
-      - name: "Publish release"
-        id: "publish"
+      - name: "Create pull request"
+        id: "pull-request"
         run: |
           version='${{ steps.version.outputs.output }}'
           changes='${{ steps.commit.outputs.changes }}'
-          changes="$(echo "$changes" | sed 's/^#/##/')"
-          gh release create --title "Version $version" --notes "$changes" "v$version"
+          changes="$(echo "$changes" | sed 's/^#/###/')"
+          gh pr new --title "Release version $version" --body "$changes" || gh pr edit --body "$changes"
         env:
           GH_TOKEN: "${{ github.token }}"
