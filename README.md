@@ -14,7 +14,7 @@ steps:
 
   - name: "Set up Dagger"
     id: "setup-dagger"
-    uses: "camptocamp/setup-dagger@v1"
+    uses: "camptocamp/setup-dagger@v2"
     with:
       module-path: "path/to/folder/containing/dagger.json"
       cloud-token: "{{ $secrets.DAGGER_CLOUD_TOKEN }}"
